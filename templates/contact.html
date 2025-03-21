@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - CKD Prediction Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #4cc9f0;
+            --warning: #f72585;
+            --success: #4CAF50;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            color: var(--dark);
+        }
+
+        /* Menu Bar Styles (from home.html) */
+        .navbar {
+            background: linear-gradient(90deg, var(--dark), var(--secondary));
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .menu {
+            display: flex;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .menu-item {
+            position: relative;
+        }
+        
+        .menu-link {
+            color: white;
+            text-decoration: none;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .menu-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-link.active {
+            background-color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .menu-icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .menu-text {
+            font-size: 15px;
+        }
+        
+        /* Mobile menu button */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 15px 20px;
+            cursor: pointer;
+        }
+
+        /* Main container - updated to match home.html */
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        /* Updated heading to blue color */
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        /* Kidney Doctor Section Styles */
+        .kidney-doctor-section {
+            text-align: center;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .kidney-doctor-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 28px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .kidney-doctor-section h2:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background-color: var(--accent);
+        }
+
+        .kidney-doctor-section p {
+            color: #6c757d;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .doctor-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .doctor-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .doctor-icon {
+            font-size: 42px;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .doctor-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        /* Updated button styles to match home.html blue buttons */
+        .cta-button {
+            display: inline-block;
+            background-color: white;
+            color: var(--primary);
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin: 10px;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .secondary-button {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .menu {
+                flex-direction: column;
+                display: none;
+            }
+            
+            .menu.active {
+                display: flex;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .doctor-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .cta-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar (from home.html) -->
+    <nav class="navbar">
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <ul class="menu" id="mainMenu">
+            <li class="menu-item">
+                <a href="/" class="menu-link">
+                    <i class="fas fa-home menu-icon"></i>
+                    <span class="menu-text">Home</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/prediction" class="menu-link">
+                    <i class="fas fa-chart-line menu-icon"></i>
+                    <span class="menu-text">CKD Prediction</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/kidney_stone" class="menu-link">
+                    <i class="fas fa-image menu-icon"></i>
+                    <span class="menu-text">Kidney Stone Detection</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/kidney_tumor" class="menu-link">
+                    <i class="fas fa-x-ray menu-icon"></i>
+                    <span class="menu-text">Kidney Tumor Detection</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/chatbot" class="menu-link">
+                    <i class="fas fa-robot menu-icon"></i>
+                    <span class="menu-text">Chatbot</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/contact" class="menu-link active">
+                    <i class="fas fa-envelope menu-icon"></i>
+                    <span class="menu-text">Contact</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Find a Kidney Doctor</h1>
+
+        <!-- Kidney Doctor Near Me Section (moved to the top) -->
+        <div class="kidney-doctor-section">
+            <h2>Kidney Specialists Near You</h2>
+            <p>Nephrologists specialize in kidney health and can provide expert care for conditions like chronic kidney disease, kidney stones, and kidney tumors. Early consultation can help prevent kidney disease progression and manage existing conditions effectively.</p>
+            
+            <div class="doctor-info">
+                <div class="doctor-card">
+                    <div class="doctor-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3 class="doctor-title">What is a Nephrologist?</h3>
+                    <p>A nephrologist is a medical doctor who specializes in kidney care and treating diseases of the kidneys. They diagnose and treat kidney failure, kidney stones, kidney infections, and chronic kidney disease.</p>
+                </div>
+                
+                <div class="doctor-card">
+                    <div class="doctor-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3 class="doctor-title">When to See a Kidney Doctor</h3>
+                    <p>Consider seeing a nephrologist if you have diabetes, high blood pressure, family history of kidney disease, blood or protein in urine, or kidney pain. Early detection can prevent kidney damage.</p>
+                </div>
+                
+                <div class="doctor-card">
+                    <div class="doctor-icon">
+                        <i class="fas fa-hospital"></i>
+                    </div>
+                    <h3 class="doctor-title">Preparing for Your Visit</h3>
+                    <p>Bring your medical history, list of medications, recent lab results, and questions about your symptoms. Be ready to discuss your diet, lifestyle, and family history of kidney issues.</p>
+                </div>
+            </div>
+            
+            <p>Finding the right nephrologist is an important step in managing your kidney health. Many hospitals and medical centers have specialized kidney care departments that can provide comprehensive treatment for various kidney conditions.</p>
+            
+            <div class="cta-buttons">
+                <a href="https://www.google.com/search?q=kidney+doctor+near+me" target="_blank" class="cta-button secondary-button">Find Kidney Doctors Near Me</a>
+                <a href="https://www.cmchistn.com/speciality_hosp_list.php?category=SP22" target="_blank" class="cta-button secondary-button">Tips for Choosing a Nephrologist</a>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>This tool is for educational purposes only and should not replace professional medical advice. Consult a healthcare provider for diagnosis and treatment.</p>
+        <p>&copy; 2025 Kidney Health Tools. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            document.getElementById('mainMenu').classList.toggle('active');
+            this.setAttribute('aria-expanded', 
+                this.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+        });
+    </script>
+</body>
+</html>
