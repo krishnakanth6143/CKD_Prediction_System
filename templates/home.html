@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kidney Health Tools - Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #4cc9f0;
+            --warning: #f72585;
+            --success: #4CAF50;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Navigation Bar Styles */
+        .navbar {
+            background: linear-gradient(90deg, var(--dark), var(--secondary));
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .menu {
+            display: flex;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .menu-item {
+            position: relative;
+        }
+        
+        .menu-link {
+            color: white;
+            text-decoration: none;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .menu-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-link.active {
+            background-color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .menu-icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .menu-text {
+            font-size: 15px;
+        }
+        
+        /* Mobile menu button */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 15px 20px;
+            cursor: pointer;
+        }
+        
+        /* Main container */
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 60px 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        
+        .hero p {
+            font-size: 18px;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: white;
+            color: var(--primary);
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            background-color: var(--accent);
+            color: white;
+            font-size: 40px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .feature-content {
+            padding: 25px;
+        }
+        
+        .feature-content h3 {
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+        
+        .feature-content p {
+            color: #6c757d;
+            line-height: 1.6;
+        }
+        
+        .about-section {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .about-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .about-section h2:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--accent);
+        }
+        
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .about-text p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        .about-image {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .about-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .menu {
+                flex-direction: column;
+                display: none;
+            }
+            
+            .menu.active {
+                display: flex;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .about-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero h1 {
+                font-size: 28px;
+            }
+            
+            .hero p {
+                font-size: 16px;
+            }
+            
+            .btn {
+                display: block;
+                width: 80%;
+                margin: 10px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <ul class="menu" id="mainMenu">
+            <li class="menu-item">
+                <a href="/" class="menu-link {{ 'active' if request.path == '/' else '' }}">
+                    <i class="fas fa-home menu-icon"></i>
+                    <span class="menu-text">Home</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/prediction" class="menu-link {{ 'active' if request.path == '/prediction' else '' }}">
+                    <i class="fas fa-chart-line menu-icon"></i>
+                    <span class="menu-text">CKD Prediction</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/kidney_stone" class="menu-link {{ 'active' if request.path == '/kidney_stone' else '' }}">
+                    <i class="fas fa-image menu-icon"></i>
+                    <span class="menu-text">Kidney Stone Detection</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/kidney_tumor" class="menu-link {{ 'active' if request.path == '/kidney_tumor' else '' }}">
+                    <i class="fas fa-x-ray menu-icon"></i>
+                    <span class="menu-text">Kidney Tumor Detection</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/chatbot" class="menu-link {{ 'active' if request.path == '/chatbot' else '' }}">
+                    <i class="fas fa-robot menu-icon"></i>
+                    <span class="menu-text">Chatbot</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/contact" class="menu-link {{ 'active' if request.path == '/contact' else '' }}">
+                    <i class="fas fa-envelope menu-icon"></i>
+                    <span class="menu-text">Contact</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Kidney Health Assessment Tools</h1>
+            <p>Utilize our advanced AI tools to assess your risk of Chronic Kidney Disease, detect kidney stones, and identify kidney tumors from medical images.</p>
+            <a href="/prediction" class="btn">Try CKD Prediction</a>
+            <a href="/kidney_stone" class="btn">Try Kidney Stone Detection</a>
+            <a href="/kidney_tumor" class="btn">Try Kidney Tumor Detection</a>
+        </section>
+        
+        <!-- Features Section -->
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon" style="background-color: #4361ee;">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Accurate Predictions</h3>
+                    <p>Our tools use machine learning to predict CKD from clinical data and detect kidney stones and tumors in images with high accuracy.</p>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon" style="background-color: #4cc9f0;">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Health Guidance</h3>
+                    <p>Get tailored recommendations for CKD prevention or management and insights into kidney stone and tumor detection.</p>
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon" style="background-color: #3a0ca3;">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Privacy Protected</h3>
+                    <p>Your data remains confidential with secure, local processing and no storage of personal information.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- About Section -->
+        <section class="about-section">
+            <h2>About Kidney Health</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p>Chronic Kidney Disease (CKD), kidney stones, and kidney tumors are significant health concerns affecting millions. CKD involves gradual kidney function loss, often linked to diabetes and hypertension, while kidney stones and tumors can cause pain and complications.</p>
+                    <p>Our tools enable early detection: CKD prediction uses clinical parameters, while kidney stone and tumor detection analyze medical images (e.g., CT scans). Early intervention can improve outcomes for all conditions.</p>
+                    <p>Monitor your kidney health with regular check-ups, especially if you have risk factors like family history or lifestyle issues.</p>
+                </div>
+                <div class="about-image">
+                    <img src="{{ url_for('static', filename='image.png') }}" alt="Kidney health illustration">
+                </div>
+            </div>
+        </section>
+        
+        <footer>
+            <p>This tool is for educational purposes only and should not replace professional medical advice. Consult a healthcare provider for diagnosis and treatment.</p>
+            <p>© 2025 Kidney Health Tools</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            document.getElementById('mainMenu').classList.toggle('active');
+            this.setAttribute('aria-expanded', 
+                this.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'922ad822f824b076',t:'MTc0MjM2NTAyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
