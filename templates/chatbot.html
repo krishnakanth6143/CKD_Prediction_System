@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CKD Prediction - Chatbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #4cc9f0;
+            --warning: #f72585;
+            --success: #4CAF50;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --sent: #e3f2fd;
+            --received: #f3e5f5;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Navigation Bar Styles */
+        .navbar {
+            background: linear-gradient(90deg, var(--dark), var(--secondary));
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .menu {
+            display: flex;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .menu-item {
+            position: relative;
+        }
+        
+        .menu-link {
+            color: white;
+            text-decoration: none;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .menu-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-link.active {
+            background-color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .menu-icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .menu-text {
+            font-size: 15px;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 15px 20px;
+            cursor: pointer;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        
+        .chatbot-header {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chatbot-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .chatbot-header p {
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 0 0 10px 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 18px;
+            position: relative;
+            line-height: 1.5;
+        }
+        
+        .received {
+            align-self: flex-start;
+            background-color: var(--received);
+            border-bottom-left-radius: 5px;
+        }
+        
+        .sent {
+            align-self: flex-end;
+            background-color: var(--sent);
+            border-bottom-right-radius: 5px;
+            text-align: right;
+        }
+        
+        .message-time {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            padding: 10px;
+            align-self: flex-start;
+        }
+        
+        .typing-dot {
+            width: 10px;
+            height: 10px;
+            margin: 0 2px;
+            background-color: #ccc;
+            border-radius: 50%;
+            animation: typing 1.5s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes typing {
+            0%, 100% {
+                transform: translateY(0);
+                background-color: #ccc;
+            }
+            50% {
+                transform: translateY(-5px);
+                background-color: var(--primary);
+            }
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
+            background-color: #f9f9f9;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            font-size: 15px;
+            outline: none;
+        }
+        
+        .chat-input input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.25);
+        }
+        
+        .send-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .send-btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .send-btn i {
+            font-size: 18px;
+        }
+        
+        .common-questions {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .common-questions h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .common-questions h3:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--accent);
+        }
+        
+        .question-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .question-chip {
+            background-color: #f0f4f8;
+            color: var(--dark);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .question-chip:hover {
+            background-color: var(--sent);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .menu {
+                flex-direction: column;
+                display: none;
+            }
+            
+            .menu.active {
+                display: flex;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .chat-container {
+                height: 500px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <ul class="menu" id="mainMenu">
+            <li class="menu-item">
+                <a href="/" class="menu-link {{ 'active' if request.path == '/' else '' }}">
+                    <i class="fas fa-home menu-icon"></i>
+                    <span class="menu-text">Home</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/prediction" class="menu-link {{ 'active' if request.path == '/prediction' else '' }}">
+                    <i class="fas fa-chart-line menu-icon"></i>
+                    <span class="menu-text">CKD Prediction</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/kidney_stone" class="menu-link {{ 'active' if request.path == '/kidney_stone' else '' }}">
+                    <i class="fas fa-image menu-icon"></i>
+                    <span class="menu-text">Kidney Stone Detection</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/kidney_tumor" class="menu-link {{ 'active' if request.path == '/kidney_tumor' else '' }}">
+                    <i class="fas fa-x-ray menu-icon"></i>
+                    <span class="menu-text">Kidney Tumor Detection</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/chatbot" class="menu-link {{ 'active' if request.path == '/chatbot' else '' }}">
+                    <i class="fas fa-robot menu-icon"></i>
+                    <span class="menu-text">Chatbot</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/contact" class="menu-link {{ 'active' if request.path == '/contact' else '' }}">
+                    <i class="fas fa-envelope menu-icon"></i>
+                    <span class="menu-text">Contact</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="chatbot-header">
+            <h1>CKD Assistant</h1>
+            <p>Ask any questions about kidney health and chronic kidney disease</p>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message received">
+                    <div class="message-content">Hello! I'm your CKD Assistant. How can I help you with kidney health today?</div>
+                    <div class="message-time">11:30 AM</div>
+                </div>
+                
+                <div class="message sent">
+                    <div class="message-content">What are the early symptoms of kidney disease?</div>
+                    <div class="message-time">11:31 AM</div>
+                </div>
+                
+                <div class="message received">
+                    <div class="message-content">Early kidney disease often has no symptoms. As it progresses, you might notice:<br><br>
+                    • Fatigue<br>
+                    • Swelling in ankles, legs, or around eyes<br>
+                    • Changes in urination frequency<br>
+                    • Foamy urine<br>
+                    • Persistent itching<br>
+                    • Poor appetite<br>
+                    • Muscle cramps<br><br>
+                    It's important to get regular checkups if you have risk factors like diabetes or high blood pressure.</div>
+                    <div class="message-time">11:32 AM</div>
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Type your question here..." autofocus>
+                <button class="send-btn" id="sendButton">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="common-questions">
+            <h3>Common Questions</h3>
+            <p>Click on any question to ask the assistant:</p>
+            <div class="question-chips">
+                <div class="question-chip">What is chronic kidney disease?</div>
+                <div class="question-chip">How is CKD diagnosed?</div>
+                <div class="question-chip">What foods should I avoid with CKD?</div>
+                <div class="question-chip">Can kidney damage be reversed?</div>
+                <div class="question-chip">What are the stages of kidney disease?</div>
+                <div class="question-chip">How can I prevent kidney disease?</div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>This chatbot provides general information only and should not replace professional medical advice.</p>
+            <p>© 2025 CKD Prediction Tool</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle menu on mobile
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            document.getElementById('mainMenu').classList.toggle('active');
+        });
+    
+        // Chat functionality
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatMessages = document.getElementById('chatMessages');
+        const questionChips = document.querySelectorAll('.question-chip');
+    
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message === '') return;
+    
+            // Add user message
+            addMessage(message, 'sent');
+            messageInput.value = '';
+    
+            // Show typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            chatMessages.appendChild(typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+            try {
+                // Send message to Flask backend
+                const response = await fetch('/chatbot_message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+    
+                const data = await response.json();
+    
+                // Remove typing indicator
+                chatMessages.removeChild(typingIndicator);
+    
+                if (data.error) {
+                    addMessage(`Error: ${data.error}`, 'received');
+                } else {
+                    addMessage(data.response, 'received');
+                }
+            } catch (error) {
+                // Remove typing indicator on error
+                chatMessages.removeChild(typingIndicator);
+                addMessage('Sorry, something went wrong. Please try again later.', 'received');
+            }
+        }
+    
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+    
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const timeString = `${hours % 12 || 12}:${minutes.toString().padStart(2, '0')} ${hours >= 12 ? 'PM' : 'AM'}`;
+    
+            messageDiv.innerHTML = `
+                <div class="message-content">${content}</div>
+                <div class="message-time">${timeString}</div>
+            `;
+    
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+    
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    
+        questionChips.forEach(chip => {
+            chip.addEventListener('click', function() {
+                const question = this.textContent;
+                messageInput.value = question;
+                sendMessage();
+            });
+        });
+    </script>
+</body>
+</html>
