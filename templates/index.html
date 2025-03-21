@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CKD Prediction</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #4cc9f0;
+            --warning: #f72585;
+            --success: #4CAF50;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: linear-gradient(90deg, var(--dark), var(--secondary));
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .menu {
+            display: flex;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .menu-item {
+            position: relative;
+        }
+        
+        .menu-link {
+            color: white;
+            text-decoration: none;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .menu-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-link.active {
+            background-color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .menu-icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .menu-text {
+            font-size: 15px;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 15px 20px;
+            cursor: pointer;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+        
+        form {
+            background: white;
+            padding: 25px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5eb;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.25);
+            outline: none;
+        }
+        
+        .input-error {
+            border-color: var(--warning);
+        }
+        
+        .tooltip {
+            display: none;
+            position: absolute;
+            top: -40px;
+            left: 10px;
+            background: var(--dark);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .tooltip:after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 10px;
+            border-width: 6px 6px 0;
+            border-style: solid;
+            border-color: var(--dark) transparent transparent;
+        }
+        
+        .input-wrapper:hover .tooltip {
+            display: block;
+        }
+        
+        .parameter-info {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+        
+        .error-message {
+            color: var(--warning);
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+        
+        .button-container {
+            text-align: center;
+            margin-top: 25px;
+        }
+        
+        input[type="submit"] {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        input[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        .result {
+            margin-top: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-header {
+            padding: 15px 20px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .positive {
+            background: linear-gradient(45deg, #4CAF50, #2E7D32);
+        }
+        
+        .negative {
+            background: linear-gradient(45deg, #f72585, #b5179e);
+        }
+        
+        .result-body {
+            background: white;
+            padding: 20px;
+        }
+        
+        .confidence {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .progress-bar {
+            flex-grow: 1;
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+        
+        .progress-value {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.6s ease;
+        }
+        
+        .recommendations {
+            margin-top: 20px;
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .parameter-guide {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .parameter-guide h3 {
+            color: var(--primary);
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        
+        .guide-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .guide-title {
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .menu {
+                flex-direction: column;
+                display: none;
+            }
+            
+            .menu.active {
+                display: flex;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Style for Download Button */
+        .download-btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 15px rgba(67, 97, 238, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <ul class="menu" id="mainMenu">
+            <li class="menu-item">
+                <a href="/" class="menu-link {{ 'active' if request.path == '/' else '' }}">
+                    <i class="fas fa-home menu-icon"></i>
+                    <span class="menu-text">Home</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/prediction" class="menu-link {{ 'active' if request.path == '/prediction' else '' }}">
+                    <i class="fas fa-chart-line menu-icon"></i>
+                    <span class="menu-text">CKD Prediction</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/kidney_stone" class="menu-link {{ 'active' if request.path == '/kidney_stone' else '' }}">
+                    <i class="fas fa-image menu-icon"></i>
+                    <span class="menu-text">Kidney Stone Detection</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/kidney_tumor" class="menu-link {{ 'active' if request.path == '/kidney_tumor' else '' }}">
+                    <i class="fas fa-x-ray menu-icon"></i>
+                    <span class="menu-text">Kidney Tumor Detection</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/chatbot" class="menu-link {{ 'active' if request.path == '/chatbot' else '' }}">
+                    <i class="fas fa-robot menu-icon"></i>
+                    <span class="menu-text">Chatbot</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/contact" class="menu-link {{ 'active' if request.path == '/contact' else '' }}">
+                    <i class="fas fa-envelope menu-icon"></i>
+                    <span class="menu-text">Contact</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>Chronic Kidney Disease Prediction</h1>
+            <div class="subtitle">Enter your medical parameters for a risk assessment</div>
+        </header>
+        
+        <form method="POST" id="predictionForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="age">Age:</label>
+                    <div class="input-wrapper">
+                        <span class="tooltip">Patient's age in years</span>
+                        <input type="text" id="age" name="age" placeholder="Enter age">
+                        <div class="parameter-info">Normal range: 18-100 years</div>
+                        <div class="error-message">Please enter a valid age (18-100)</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bp">Blood Pressure:</label>
+                    <div class="input-wrapper">
+                        <span class="tooltip">Systolic blood pressure (mm/Hg)</span>
+                        <input type="text" id="bp" name="bp" placeholder="Enter BP">
+                        <div class="parameter-info">Normal range: 90-140 mm/Hg</div>
+                        <div class="error-message">Please enter a valid BP (50-200)</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sg">Specific Gravity:</label>
+                    <div class="input-wrapper">
+                        <span class="tooltip">Urine specific gravity</span>
+                        <input type="text" id="sg" name="sg" placeholder="Enter SG">
+                        <div class="parameter-info">Normal range: 1.005-1.030</div>
+                        <div class="error-message">Please enter a valid SG (1.000-1.050)</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="al">Albumin:</label>
+                    <div class="input-wrapper">
+                        <span class="tooltip">Albumin level in urine (0-5)</span>
+                        <input type="text" id="al" name="al" placeholder="Enter AL">
+                        <div class="parameter-info">Normal value: 0</div>
+                        <div class="error-message">Please enter a valid value (0-5)</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bgr">Blood Glucose Random:</label>
+                    <div class="input-wrapper">
+                        <span class="tooltip">Blood glucose level (mg/dL)</span>
+                        <input type="text" id="bgr" name="bgr" placeholder="Enter BGR">
+                        <div class="parameter-info">Normal range: 70-125 mg/dL</div>
+                        <div class="error-message">Please enter a valid value (20-500)</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bu">Blood Urea:</label>
+                    <div class="input-wrapper">
+                        <span class="tooltip">Blood urea level (mg/dL)</span>
+                        <input type="text" id="bu" name="bu" placeholder="Enter BU">
+                        <div class="parameter-info">Normal range: 7-20 mg/dL</div>
+                        <div class="error-message">Please enter a valid value (5-200)</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sc">Serum Creatinine:</label>
+                    <div class="input-wrapper">
+                        <span class="tooltip">Serum creatinine level (mg/dL)</span>
+                        <input type="text" id="sc" name="sc" placeholder="Enter SC">
+                        <div class="parameter-info">Normal range: 0.6-1.2 mg/dL</div>
+                        <div class="error-message">Please enter a valid value (0.1-20)</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="hemo">Hemoglobin:</label>
+                    <div class="input-wrapper">
+                        <span class="tooltip">Hemoglobin level (g/dL)</span>
+                        <input type="text" id="hemo" name="hemo" placeholder="Enter HEMO">
+                        <div class="parameter-info">Normal range: 12-18 g/dL</div>
+                        <div class="error-message">Please enter a valid value (3-20)</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pcv">Packed Cell Volume:</label>
+                    <div class="input-wrapper">
+                        <span class="tooltip">Packed cell volume (%)</span>
+                        <input type="text" id="pcv" name="pcv" placeholder="Enter PCV">
+                        <div class="parameter-info">Normal range: 37-52%</div>
+                        <div class="error-message">Please enter a valid value (10-70)</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="wc">White Blood Cell Count:</label>
+                    <div class="input-wrapper">
+                        <span class="tooltip">WBC count (cells/cumm)</span>
+                        <input type="text" id="wc" name="wc" placeholder="Enter WC">
+                        <div class="parameter-info">Normal range: 4,500-11,000</div>
+                        <div class="error-message">Please enter a valid value (1000-20000)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="button-container">
+                <input type="submit" value="Analyze and Predict">
+            </div>
+        </form>
+        
+        {% if prediction %}
+        <div class="result">
+            <div class="result-header {% if 'No CKD' in prediction %}negative{% else %}positive{% endif %}">
+                <h2>Prediction Result</h2>
+            </div>
+            <div class="result-body">
+                <p><strong>{{ prediction }}</strong></p>
+                
+                <div class="confidence">
+                    <span>Confidence:</span>
+                    <div class="progress-bar">
+                        <div class="progress-value" 
+                             style="width: {{ probability | float }}%; background-color: #4CAF50">
+                        </div>
+                    </div>
+                    <span>{{ probability }}%</span>
+                </div>
+                
+                <div class="recommendations">
+                    <h3>Recommendations:</h3>
+                    <p>{{ advice }}</p>
+                </div>
+
+                <!-- Download Report Button for CKD Detection -->
+                {% if 'Chronic Kidney Disease Detected' in prediction %}
+                <div class="button-container" style="margin-top: 20px;">
+                    <a href="{{ url_for('download_report', prediction=prediction, probability=probability, advice=advice) }}" 
+                       target="_blank" 
+                       class="download-btn">
+                        Download Report (PDF)
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    
+        <div class="parameter-guide">
+            <h3>Parameter Guide</h3>
+            <div class="guide-grid">
+                <div class="guide-item">
+                    <div class="guide-title">AGE</div>
+                    <div>Patient's age in years</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-title">BP</div>
+                    <div>Blood pressure in mm/Hg</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-title">SG</div>
+                    <div>Specific gravity of urine</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-title">AL</div>
+                    <div>Albumin level in urine (0-5)</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-title">BGR</div>
+                    <div>Blood glucose random in mg/dL</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-title">BU</div>
+                    <div>Blood urea in mg/dL</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-title">SC</div>
+                    <div>Serum creatinine in mg/dL</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-title">HEMO</div>
+                    <div>Hemoglobin level in g/dL</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-title">PCV</div>
+                    <div>Packed cell volume percentage</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-title">WC</div>
+                    <div>White blood cell count (cells/cumm)</div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>This tool is for educational purposes only and should not replace professional medical advice. Please consult with a healthcare provider for diagnosis and treatment.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            document.getElementById('mainMenu').classList.toggle('active');
+        });
+
+        const form = document.getElementById('predictionForm');
+        const inputs = form.querySelectorAll('input[type="text"]');
+        
+        const validationRules = {
+            age: { min: 18, max: 100 },
+            bp: { min: 50, max: 200 },
+            sg: { min: 1.000, max: 1.050 },
+            al: { min: 0, max: 5 },
+            bgr: { min: 20, max: 500 },
+            bu: { min: 5, max: 200 },
+            sc: { min: 0.1, max: 20 },
+            hemo: { min: 3, max: 20 },
+            pcv: { min: 10, max: 70 },
+            wc: { min: 1000, max: 20000 }
+        };
+
+        function validateInput(input) {
+            const value = input.value.trim();
+            const rules = validationRules[input.id];
+            const errorMessage = input.parentElement.querySelector('.error-message');
+
+            if (!value || isNaN(value) || value < rules.min || value > rules.max) {
+                input.classList.add('input-error');
+                errorMessage.style.display = 'block';
+                return false;
+            } else {
+                input.classList.remove('input-error');
+                errorMessage.style.display = 'none';
+                return true;
+            }
+        }
+
+        inputs.forEach(input => {
+            input.addEventListener('input', () => validateInput(input));
+        });
+
+        form.addEventListener('submit', (e) => {
+            let isValid = true;
+            inputs.forEach(input => {
+                if (!validateInput(input)) {
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please correct the invalid inputs before submitting.');
+            }
+        });
+    </script>
+</body>
+</html>
