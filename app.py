@@ -9,7 +9,6 @@ import re
 import tensorflow as tf
 from PIL import Image
 import os
-import cv2
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -18,13 +17,13 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Model URLs (replace with your actual direct download links, e.g., from Google Drive)
+# Model URLs
 CKD_MODEL_URL = "https://drive.google.com/uc?export=download&id=1B4suh6dP70mpWaSou2hsthJaU8UH-GeB"
 SCALER_URL = "https://drive.google.com/uc?export=download&id=1W085sZvdFn2-cvh96L7e94Q-k63sCb0O"
 KIDNEY_STONE_MODEL_URL = "https://drive.google.com/uc?export=download&id=1cs5fbkyksCkMmcB0Xm5Qnqyroq6scY1k"
-KIDNEY_TUMOR_MODEL_URL = "https://drive.google.com/uc?export=download&id=1-5Dj32fZ--a3muF_VYvFataF-r5Gj6rY"
+PROCESSED_FEATURES_URL = "https://drive.google.com/uc?export=download&id=1WltbRIH389Qh7LxLlONn7DGikdYd8RV_"  # Replace with actual ID
 
-# Load CKD model and scaler
+# Load model function
 def load_model(url, path, is_pickle=True):
     if not os.path.exists(path):
         os.makedirs("saved_model", exist_ok=True)
@@ -33,11 +32,16 @@ def load_model(url, path, is_pickle=True):
             f.write(response.content)
     return pickle.load(open(path, "rb")) if is_pickle else tf.keras.models.load_model(path)
 
+# Load models at startup
 try:
     ckd_model = load_model(CKD_MODEL_URL, 'saved_model/ckd_model.pkl', is_pickle=True)
     scaler = load_model(SCALER_URL, 'saved_model/scaler.pkl', is_pickle=True)
     kidney_stone_model = load_model(KIDNEY_STONE_MODEL_URL, 'saved_model/kidney_stone_model.h5', is_pickle=False)
-    kidney_tumor_model = load_model(KIDNEY_TUMOR_MODEL_URL, 'saved_model/kidney_tumor_model.h5', is_pickle=False)
+    # Download processed_features.csv
+    if not os.path.exists('saved_model/processed_features.csv'):
+        response = requests.get(PROCESSED_FEATURES_URL)
+        with open('saved_model/processed_features.csv', 'wb') as f:
+            f.write(response.content)
 except Exception as e:
     print(f"Error loading models: {e}")
     exit(1)
@@ -48,7 +52,6 @@ ckd_feature_names = ['age', 'bp', 'sg', 'al', 'bgr', 'bu', 'sc', 'hemo', 'pcv', 
 # CKD Prediction function
 def predict_ckd(input_data):
     input_df = pd.DataFrame([input_data], columns=ckd_feature_names)
-    input_df = input_df[ckd_feature_names]
     input_scaled = scaler.transform(input_df)
     prediction = ckd_model.predict(input_scaled)[0]
     probability = ckd_model.predict_proba(input_scaled)[0][prediction]
@@ -70,21 +73,6 @@ def predict_kidney_stone(image_path):
     img_array_rgb = np.expand_dims(img_array_rgb, axis=0)
     prediction = kidney_stone_model.predict(img_array_rgb)
     result = "Kidney Stone Detected" if prediction[0][0] > 0.5 else "No Kidney Stone"
-    confidence = prediction[0][0] * 100 if prediction[0][0] > 0.5 else (1 - prediction[0][0]) * 100
-    return result, confidence
-
-# Kidney Tumor Prediction function
-def predict_kidney_tumor(image_path):
-    img = cv2.imread(image_path, cv2.IMREAD_COLOR)
-    if img is None:
-        raise ValueError("Image could not be loaded.")
-    img = cv2.resize(img, (224, 224))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = img.astype('float32') / 255.0
-    img = np.expand_dims(img, axis=0)
-    prediction = kidney_tumor_model.predict(img)
-    class_names = ['Normal', 'Tumor']
-    result = class_names[int(prediction[0][0] > 0.5)]
     confidence = prediction[0][0] * 100 if prediction[0][0] > 0.5 else (1 - prediction[0][0]) * 100
     return result, confidence
 
@@ -154,7 +142,7 @@ def generate_pdf_report(prediction, probability, advice):
     buffer.seek(0)
     return buffer
 
-# Routes (unchanged)
+# Routes
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -215,29 +203,6 @@ def kidney_stone_prediction():
         message = f"{result} (Confidence: {confidence:.2f}%)"
         return render_template('kidney_stone.html', message=message, image=file.filename)
     return render_template('kidney_stone.html', message=None, image=None)
-
-@app.route('/kidney_tumor', methods=['GET', 'POST'])
-def kidney_tumor_prediction():
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            return render_template('kidney_tumor.html', message='No file uploaded', image=None)
-        file = request.files['file']
-        if file.filename == '':
-            return render_template('kidney_tumor.html', message='No file selected', image=None)
-        
-        upload_folder = 'static/uploads'
-        if not os.path.exists(upload_folder):
-            os.makedirs(upload_folder)
-        file_path = os.path.join(upload_folder, file.filename)
-        file.save(file_path)
-
-        try:
-            result, confidence = predict_kidney_tumor(file_path)
-            message = f"Predicted: {result} (Confidence: {confidence:.2f}%)"
-        except ValueError as e:
-            message = str(e)
-        return render_template('kidney_tumor.html', message=message, image=file.filename)
-    return render_template('kidney_tumor.html', message=None, image=None)
 
 @app.route('/chatbot')
 def chatbot():
