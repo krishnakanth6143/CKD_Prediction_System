@@ -4,7 +4,6 @@ import numpy as np
 import pickle
 import requests
 import json
-import time
 import re
 import tensorflow as tf
 from PIL import Image
@@ -17,31 +16,13 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Model URLs
-CKD_MODEL_URL = "https://drive.google.com/uc?export=download&id=1B4suh6dP70mpWaSou2hsthJaU8UH-GeB"
-SCALER_URL = "https://drive.google.com/uc?export=download&id=1W085sZvdFn2-cvh96L7e94Q-k63sCb0O"
-KIDNEY_STONE_MODEL_URL = "https://drive.google.com/uc?export=download&id=1cs5fbkyksCkMmcB0Xm5Qnqyroq6scY1k"
-PROCESSED_FEATURES_URL = "https://drive.google.com/uc?export=download&id=1WltbRIH389Qh7LxLlONn7DGikdYd8RV_"  # Replace with actual ID
-
-# Load model function
-def load_model(url, path, is_pickle=True):
-    if not os.path.exists(path):
-        os.makedirs("saved_model", exist_ok=True)
-        response = requests.get(url)
-        with open(path, "wb") as f:
-            f.write(response.content)
-    return pickle.load(open(path, "rb")) if is_pickle else tf.keras.models.load_model(path)
-
-# Load models at startup
+# Load models at startup from saved_model/ directory
 try:
-    ckd_model = load_model(CKD_MODEL_URL, 'saved_model/ckd_model.pkl', is_pickle=True)
-    scaler = load_model(SCALER_URL, 'saved_model/scaler.pkl', is_pickle=True)
-    kidney_stone_model = load_model(KIDNEY_STONE_MODEL_URL, 'saved_model/kidney_stone_model.h5', is_pickle=False)
-    # Download processed_features.csv
-    if not os.path.exists('saved_model/processed_features.csv'):
-        response = requests.get(PROCESSED_FEATURES_URL)
-        with open('saved_model/processed_features.csv', 'wb') as f:
-            f.write(response.content)
+    with open('saved_model/ckd_model.pkl', 'rb') as f:
+        ckd_model = pickle.load(f)
+    with open('saved_model/scaler.pkl', 'rb') as f:
+        scaler = pickle.load(f)
+    kidney_stone_model = tf.keras.models.load_model('saved_model/kidney_stone_model.h5')
 except Exception as e:
     print(f"Error loading models: {e}")
     exit(1)
@@ -109,9 +90,8 @@ def get_medicine_details(medicine_name, max_retries=3):
                 message = data["choices"][0]["message"]["content"].strip()
                 return {"status": "Success", "name": medicine_name, "message": message}
             elif response.status_code == 429:
-                wait_time = 2 ** attempt
-                print(f"Rate limit hit (429). Waiting {wait_time} seconds before retry {attempt + 1}/{max_retries}...")
-                time.sleep(wait_time)
+                time.sleep(2 ** attempt)  # Exponential backoff
+                continue
             else:
                 return {"status": "Error", "message": f"API request failed with status {response.status_code}."}
         except Exception as e:
@@ -123,21 +103,19 @@ def generate_pdf_report(prediction, probability, advice):
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
     styles = getSampleStyleSheet()
-    story = []
-
-    story.append(Paragraph("Chronic Kidney Disease Prediction Report", styles['Title']))
-    story.append(Spacer(1, 12))
-    story.append(Paragraph(f"<b>Prediction:</b> {prediction}", styles['Normal']))
-    story.append(Spacer(1, 12))
-    story.append(Paragraph(f"<b>Confidence:</b> {probability}%", styles['Normal']))
-    story.append(Spacer(1, 12))
-    story.append(Paragraph("<b>Recommendations:</b>", styles['Normal']))
-    story.append(Paragraph(advice, styles['Normal']))
-    story.append(Spacer(1, 12))
-    current_date = datetime.now().strftime('%B %d, %Y')
-    story.append(Paragraph(f"Generated on: {current_date}", styles['Normal']))
-    story.append(Paragraph("Note: Consult a healthcare professional for proper diagnosis and treatment.", styles['Normal']))
-
+    story = [
+        Paragraph("Chronic Kidney Disease Prediction Report", styles['Title']),
+        Spacer(1, 12),
+        Paragraph(f"<b>Prediction:</b> {prediction}", styles['Normal']),
+        Spacer(1, 12),
+        Paragraph(f"<b>Confidence:</b> {probability}%", styles['Normal']),
+        Spacer(1, 12),
+        Paragraph("<b>Recommendations:</b>", styles['Normal']),
+        Paragraph(advice, styles['Normal']),
+        Spacer(1, 12),
+        Paragraph(f"Generated on: {datetime.now().strftime('%B %d, %Y')}", styles['Normal']),
+        Paragraph("Note: Consult a healthcare professional for proper diagnosis and treatment.", styles['Normal'])
+    ]
     doc.build(story)
     buffer.seek(0)
     return buffer
@@ -150,10 +128,8 @@ def home():
 @app.route('/prediction', methods=['GET', 'POST'])
 def ckd_prediction():
     if request.method == 'POST':
-        input_data = {}
-        for feature in ckd_feature_names:
-            value = request.form.get(feature, '')
-            input_data[feature] = np.nan if value in ['', '?'] else value
+        input_data = {feature: np.nan if request.form.get(feature, '') in ['', '?'] else request.form.get(feature, '') 
+                      for feature in ckd_feature_names}
         input_df = pd.DataFrame([input_data], columns=ckd_feature_names)
         input_df = input_df.apply(pd.to_numeric, errors='coerce')
         processed_features = pd.read_csv('saved_model/processed_features.csv')
@@ -187,15 +163,12 @@ def download_report():
 @app.route('/kidney_stone', methods=['GET', 'POST'])
 def kidney_stone_prediction():
     if request.method == 'POST':
-        if 'file' not in request.files:
-            return render_template('kidney_stone.html', message='No file uploaded', image=None)
-        file = request.files['file']
-        if file.filename == '':
-            return render_template('kidney_stone.html', message='No file selected', image=None)
+        if 'file' not in request.files or not request.files['file'].filename:
+            return render_template('kidney_stone.html', message='No file uploaded or selected', image=None)
         
+        file = request.files['file']
         upload_folder = 'static/uploads'
-        if not os.path.exists(upload_folder):
-            os.makedirs(upload_folder)
+        os.makedirs(upload_folder, exist_ok=True)
         file_path = os.path.join(upload_folder, file.filename)
         file.save(file_path)
 
@@ -224,7 +197,7 @@ def chatbot_message():
         if medicine_match:
             medicine_name = medicine_match.group(1).strip()
             result = get_medicine_details(medicine_name)
-            return jsonify({'response': result['message'] if result['status'] == "Success" else result['message']})
+            return jsonify({'response': result['message']})
 
         payload = {
             "model": "qwen/qwq-32b-preview",
@@ -244,8 +217,7 @@ def chatbot_message():
             payload["messages"][1]["content"] = f"Briefly answer: {user_message} with causes, symptoms, or prevention (within 140 tokens)."
             response = requests.post(API_URL, json=payload, headers=HEADERS)
             response.raise_for_status()
-            result = response.json()
-            bot_response = result['choices'][0]['message']['content'].strip()
+            bot_response = response.json()['choices'][0]['message']['content'].strip()
 
         return jsonify({'response': bot_response})
     except Exception as e:
