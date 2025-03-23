@@ -193,16 +193,10 @@ def chatbot_message():
         if not user_message:
             return jsonify({'response': "Please ask about kidney health, CKD, kidney stones, treatments, or prevention."})
 
-        medicine_match = re.search(r"(?:tell me about|what is|describe)\s+([a-zA-Z\s]+)", user_message, re.IGNORECASE)
-        if medicine_match:
-            medicine_name = medicine_match.group(1).strip()
-            result = get_medicine_details(medicine_name)
-            return jsonify({'response': result['message']})
-
         payload = {
             "model": "qwen/qwq-32b-preview",
             "messages": [
-                {"role": "system", "content": "You are a CKD Assistant, expert in kidney health. Provide concise, complete responses (within 150 tokens) on CKD stages, kidney stones (causes, symptoms, prevention), dialysis, transplants, treatments, prevention, and symptoms."},
+                {"role": "system", "content": "You are a Kidney Health Assistant that provides personalized kidney health assessments including lab result interpretations, risk factor awareness, lifestyle and dietary recommendations, symptom checking and triage management strategies for kidney conditions. Provide educational information, support, and resources. Include a disclaimer that this information is for educational purposes and not a substitute for professional medical advice."},
                 {"role": "user", "content": user_message}
             ],
             "max_tokens": 150,
@@ -217,7 +211,8 @@ def chatbot_message():
             payload["messages"][1]["content"] = f"Briefly answer: {user_message} with causes, symptoms, or prevention (within 140 tokens)."
             response = requests.post(API_URL, json=payload, headers=HEADERS)
             response.raise_for_status()
-            bot_response = response.json()['choices'][0]['message']['content'].strip()
+            result = response.json()
+            bot_response = result['choices'][0]['message']['content'].strip()
 
         return jsonify({'response': bot_response})
     except Exception as e:
